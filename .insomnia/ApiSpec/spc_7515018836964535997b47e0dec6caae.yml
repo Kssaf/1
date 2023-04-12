@@ -1,0 +1,626 @@
+_id: spc_7515018836964535997b47e0dec6caae
+type: ApiSpec
+parentId: wrk_ddd4859ef9294834a944e9a6d2a78956
+modified: 1681307355059
+created: 1681307321374
+fileName: my-spec.yaml
+contents: >-
+  openapi: 3.0.0
+
+  servers: []
+
+  info:
+    description: |-
+      <code>**example**</code>
+      <h4> **описание по спеке asyncapi:** <br> 
+      **[**https://app.swaggerhub.com/apis-docs/kkksssas/asyncapi/1.0.0**](https://app.swaggerhub.com/apis-docs/kkksssas/asyncapi/1.0.0)**                                                                  
+    version: "1.0.0"
+    title: "OpenApi Core "
+  summary: https://app.swaggerhub.com/apis-docs/kkksssas/asyncapi/1.0.0
+
+  tags: 
+    - name: USER 
+      description: microservice user
+    - name: MS-AUTH
+      description: microservice ms-auth
+  paths:
+    /profile/update:
+      post:
+        summary: Редактировать профиль 
+        description: <big><strong>≈</strong></big> <code><small><em>ws_message:</em></small> <strong>USER:profile-update</code> 
+        tags:
+          - USER
+        responses:
+          '200':
+            description: Обновленный профиль
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ProfileUpdate'
+          '400':
+            description: ''
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileUpdateData'
+          description:  Доступные данные для редактирования в профиле 
+    /auth/login: 
+      post:
+        summary: Авторизация 
+        description: "<big><strong>≈</strong></big> <code><small><em>ws_message:</em></small> <strong>MS-AUTH:auth-login</code>\ 
+
+          <br>  send message: </br>
+
+
+          \    {\ 
+
+          \t\t\t\t\"sendTime\": \"integer\",\ 
+
+          \t\t\t\t\"msgid\": \"string\",
+
+          \t\t\t\t\"type\": \"MS-AUTH:auth-loginWoCaptcha\",
+
+          \t\t\t\t\"data\": {
+
+          \t\t\t\t\t\t\t \"login\": \"string\",\ 
+
+          \t\t\t\t\t\t\t \"password\": \"string\"\ 
+
+          \t\t\t\t}
+
+          \t}
+
+          \t"    
+        tags:
+            - auth 
+        responses:
+          '200':
+            description: Метаданные профиля (с балансом) 
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Profile'
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Login'
+          description: Учетные данные аккаунта 
+    
+    /forgot/recovery: 
+      post:
+        summary: Получить код для восстановления пароля
+        description: <big><strong>≈</strong></big> <code><small><em>ws_message:</em></small> <strong>MS-AUTH:forgot-recovery</code>
+        tags:
+           - forgot
+        responses:
+          '200':
+            description: успех/не успех выполнения запроса
+            content:
+              application/json:
+                 schema:
+                  $ref: '#/components/schemas/RecoveryStatus'
+        requestBody:
+            content:
+              application/json:
+                schema:
+                 $ref: '#/components/schemas/Recovery'
+            description: данные для отправки кода восстановления
+    /forgot/confirm: 
+      post:
+        summary: Создать новый пароль 
+        description: <big><strong>≈</strong></big> <code><small><em>ws_message:</em></small> <strong>MS-AUTH:forgot-confirm</code>
+        tags:
+           - forgot
+        responses:
+          '200':
+            description: успех/не успех выполнения запроса
+            content:
+              application/json:
+                 schema:
+                  $ref: '#/components/schemas/ConfirmStatus'
+        requestBody:
+            content:
+              application/json:
+                schema:
+                 $ref: '#/components/schemas/Confirm'
+            description: код + новый пароль
+  components: 
+    schemas:
+      Confirm: 
+        description: подверждение кода + новый пароль 
+        type: object 
+        required:
+         - code
+         - password
+         - userId
+        properties: 
+          userId: 
+            type: integer 
+            format: id
+          code: 
+            type: string
+          password: 
+            type: string
+            format: password
+          repeat_password: 
+            type: string
+            format: password
+      ConfirmStatus: 
+        description: успех/не успех выполнения запроса
+        type: object 
+        required:
+          - status
+          - data
+        properties:
+          status:
+            type: integer
+          data:
+            anyOf: 
+             - $ref: '#/components/schemas/Profile'
+             - $ref: '#/components/schemas/DataError'
+      Recovery: 
+        description: данные аккаунта для восстановления 
+        type: object 
+        required:
+         - byPhone
+         - account
+        properties: 
+          byPhone:
+            type: boolean 
+            description: true -  отправка кода на phone / false - отправка кода на email 
+          account: 
+            type: string 
+            description: email или телефон 
+      RecoveryStatus: 
+        description: успех/не успех отправки кода восстановления
+        type: object
+        required:
+         - status
+         - data
+        properties:
+           status:
+             type: integer
+           data:
+              oneOf: 
+                - type: object
+                  description: успешная отправка кода 
+                  required:
+                    - user_id
+                    - email
+                  properties: 
+                    user_id: 
+                      type: integer 
+                      format: id
+                    email: 
+                      type: string
+                      format: email
+                - $ref: '#/components/schemas/DataError'
+      DataError: 
+        type: object
+        description: ошибка выполнения запроса 
+        required:
+          - status
+          - message
+        properties: 
+          status:
+            type: integer
+            description: код ошибки
+          message: 
+            type: string
+            description: текст ошибки
+      Login: 
+        description: учетные данные
+        type: object
+        properties:
+          login: 
+            type: string
+            description: email или телефон 
+          password: 
+            type: string
+            format: password
+            description: пароль
+        required:
+         - login
+         - password
+      ProfileUpdateData:
+        description: редактируемые данные в профиле
+        type: object
+        required:
+          - phone
+          - country
+          - email
+          - name
+          - birthday
+          - timezone
+        properties:
+          phone:
+            type: string
+          country:
+            type: string
+            enum: [ ru, kz]
+          name:
+            type: string
+          email: 
+            type: string
+            format: email
+          email_confirmation_code: 
+             type: string
+          password: 
+              type: string
+          birthday: 
+            type: integer 
+            format: data
+          timezone: 
+            type: string
+            format: timezone
+      ProfileUpdate: 
+        description: отредактированные данные в профиле
+        type: object
+        required:
+         - status
+         - data
+        properties:
+           status:
+             type: integer
+           data:
+            type: object
+            required:
+             - id
+             - email
+             - phone
+             - name
+             - country
+             - currency
+             - activity
+             - time_registration
+             - birthday
+             - passport
+             - address
+             - passport_by
+             - partner_key
+             - last_ip
+             - last_ip_country
+             - firstdeposit_time
+             - updated_at
+             - created_at
+             - user_id
+            properties:
+             updatedUser:
+              type: object
+              properties: 
+                id: 
+                  type: integer
+                  description: ID пользоваетля
+                email: 
+                   type: string
+                   format: email
+                phone:
+                  type: string
+                  description: Номер телефона пользоваетля
+                name:
+                  type: string
+                  description: Имя/никнейм пользователя
+                country: 
+                  type: string
+                  description: доступные коды стран ISO 
+                  enum: [ RU, KZ, AE ] 
+                  format: ISO 
+                currency:
+                  type: string
+                  description: доступные коды валют ISO 
+                  enum: [ EUR , USD, RUB ,AED ] 
+                  format: ISO 4217 
+                activity:
+                  description: Активность пользователя? 0 - неактивный , 1 - активный
+                  type: integer
+                  enum: [ 0, 1] 
+                  default: 0
+                time_registration:
+                  description: timestamp регистрации пользователя (дата и время)
+                  type: string
+                  format: date-time
+                birthday:
+                  description: Дата рождения в int
+                  type: integer
+                  format: data
+                passport:
+                  type: string
+                  description: Паспортные данные 
+                address:
+                   type: string
+                   description: Адрес пользоваетля
+                passport_by:
+                  type: string
+                  description: Что-то о паспортных данных
+                partner_key:
+                  type: string
+                  description: Ключ партнера
+                last_ip:
+                  type: string
+                  description: 'IP-адрес пользвоателя, с которого он авторизовался'
+                last_ip_country:
+                  type: string
+                  description: доступные коды стран для ip ISO 
+                  enum: [ ru , kz, ae ] 
+                  format: ISO 
+                tg_id:
+                  description: ' '
+                  type: 
+                    integer
+                  default: null
+                timezone:
+                  type:
+                    string
+                  default: null
+                hash_id:
+                  description: ID хеша партнера/что-то связано с партнерами (нам не нужно)
+                  type: integer
+                  default: null
+                note:
+                  description: Внутренние заметки о пользователе (менеджером в админке)
+                  type:
+                    string
+                  default: null
+                poker_nickname:
+                  type:
+                     string
+                firstdeposit_time:
+                    description: timestamp внесения первого депозита (дата и время)
+                    type:
+                       string
+                    format: date-time
+                updated_at:
+                    type: string
+                    description: timestamp обновления записи в БД (дата и время)
+                    format: date-time
+                created_at:
+                    type: string
+                    description: timestamp создания записи в БД (дата и время)
+                    format: date-time
+      
+      Profile: 
+         description: профиль с балансом и метаданными (получаем после авторизации/регистрации/восстановления пароля) 
+         type: object
+         required:
+          - status
+          - data
+         properties:
+          status:
+            type: integer
+          data:
+           required:
+             - id
+             - email
+             - phone
+             - name
+             - country
+             - currency
+             - activity
+             - time_registration
+             - birthday
+             - passport
+             - address
+             - passport_by
+             - partner_key
+             - last_ip
+             - last_ip_country
+             - firstdeposit_time
+             - updated_at
+             - created_at
+             - balanceData
+             - token
+             - user_id
+             - meta
+           type: object
+           properties:
+              id:
+                type: integer
+                description: ID пользоваетля
+              email:
+                type: string
+                description: Email пользоваетля
+                format: email
+              phone:
+                type: string
+                description: Номер телефона пользоваетля
+              name:
+                 type: string
+                 description: Имя/никнейм пользователя
+              country:
+                  type: string
+                  description: доступные коды стран ISO 
+                  enum: [ RU , KZ, AE ] 
+                  format: ISO 
+              currency:
+                  type: string
+                  description: доступные коды валют ISO 
+                  enum: [ EUR , USD, RUB ,AED ] 
+                  format: ISO 4217 
+              activity:
+                description: Активность пользователя? 0 - неактивный , 1 - активный
+                type: integer
+                enum: [0,1]
+                default: 0
+              time_registration:
+                description: timestamp регистрации пользователя (дата и время)
+                type: string
+                format: date-time
+              birthday:
+                description: Дата рождения в int
+                type: integer
+                format: data
+              passport:
+                type: string
+                description: Паспортные данные
+              address:
+                type: string
+                description: Адрес пользоваетля
+              passport_by:
+                 type: string
+                 description: Что-то о паспортных данных
+              partner_key:
+                type: string
+                description: Ключ партнера (не нужно), но все равно будет как обязательный -> пустая строка, не может быть null
+              last_ip:
+                type: string
+                description: 'IP-адрес пользвоателя, с которого он авторизовался'
+              last_ip_country:
+                  type: string
+                  description: доступные коды стран для ip ISO 
+                  enum: [ ru , kz, ae ] 
+                  format: ISO 
+              tg_id:
+                description: ' '
+                type: 
+                 integer
+                default: null
+              timezone:
+               type: string
+               default: null
+              hash_id:
+                description: ID хеша партнера/что-то связано с партнерами (нам не нужно)
+                type: integer
+                default: null
+              note:
+                description: Внутренние заметки о пользователе (менеджером в админке)
+                type: string
+                default: null
+              poker_nickname:
+                description: никнейм в покере
+                type: string
+                default: null
+              firstdeposit_time:
+                description: timestamp внесения первого депозита (дата и время)
+                type: string
+                format: date-time
+              updated_at:
+                type: string
+                description: timestamp обновления записи в БД (дата и время)
+                format: date-time
+              created_at:
+                type: string
+                description: timestamp создания записи в БД (дата и время)
+                format: date-time
+              balanceData:
+                type: object
+                required:
+                  - currency
+                  - amount
+                properties:
+                  primary:
+                    type: object
+                    required:
+                    - primary
+                    properties:
+                      currency:
+                         type: string
+                         description: доступные коды валют ISO 
+                         enum: [ EUR , USD, RUB ,AED ] 
+                         format: ISO 4217 
+                      amount:
+                        type: number
+                        minimum: 0
+                        description: Cумма на балансе >= 0 (больше чем сумма баланса либо  равно) -С плавающей запятой
+              token:
+                type: string
+                format: uuid
+              user_id:
+                type: integer
+                format: id
+
+              meta:
+                type: object
+                required:
+                  - match_provider_id
+                  - 1win_tester
+                  - bonus_amount
+                  - bonus_casino
+                  - games
+                  - features
+                  - rules_accepted
+                  - test_val
+                  - email_editable
+                  - password_need_to_be_changed
+                  - verification_status
+                  - leaderboard_off
+                  - free_deposits
+                  - hamburger_menu
+                  - push_modal_showed_on
+                  - push_subscribe_bonus_gained
+                  - match_groups_collapsed
+                  - ab_group
+                  - deposits_count
+                  - is_vip_domain
+                properties:
+                  match_provider_id:
+                    type: integer
+                    enum: [ 0 , 1, 2, 3]
+                    default: 0
+                  1win_tester:
+                    type: boolean
+                    default: false
+                  bonus_amount:
+                    type: number
+                    minimum: 0
+                  bonus_casino:
+                    type: number
+                    minimum: 0
+                  games:
+                    type: object
+                    properties:
+                      initial:
+                        type: boolean
+                        default: true
+                    required:
+                      - initial
+                    additionalProperties: true
+                  features:
+                    type: object
+                    required:
+                     - initial
+                    properties:
+                      initial:
+                        type: boolean
+                        default: false
+                    additionalProperties: false
+                  rules_accepted:
+                      type: boolean
+                      default: true
+                  test_val:
+                      type: boolean
+                      default: true
+                  email_editable:
+                      type: boolean
+                      default: true
+                  password_need_to_be_changed:
+                      type: boolean
+                      default: false
+                  verification_status:
+                      type: integer
+                      description: 0- 1- 2- 3-
+                      enum: [ 0 , 1, 2, 3]
+                      default: 0
+                  leaderboard_off:
+                      type: boolean
+                      default: false
+                  free_deposits:
+                      type: boolean
+                      default: false
+                  hamburger_menu:
+                      type: array
+                      default: null
+                      items:
+                        type: integer
+                  push_modal_showed_on:
+                      type: integer
+                      format: data-time
+                      default: null
+                  push_subscribe_bonus_gained:
+                      type: boolean
+                      default: false
+                  match_groups_collapsed:
+                      type: boolean
+                      default: false
+contentType: yaml
